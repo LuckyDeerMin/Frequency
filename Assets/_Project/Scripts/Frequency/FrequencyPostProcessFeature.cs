@@ -91,7 +91,7 @@ public class FrequencyPostProcessFeature : ScriptableRendererFeature
 
                 builder.SetRenderFunc(static (PassData data, RasterGraphContext context) =>
                 {
-                    Blitter.BlitTexture(context.cmd, data.source, new Vector4(1, 1, 0, 0), 0);
+                    Blitter.BlitTexture(context.cmd, data.source, new Vector4(1, 1, 0, 0), mipLevel: 0, bilinear: false);
                 });
             }
         }
