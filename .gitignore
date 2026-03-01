@@ -1,0 +1,9 @@
+﻿*.csproj
+*.sln
+Library
+Logs
+Temp
+Build
+Builds
+MemoryCaptures
+Obj
