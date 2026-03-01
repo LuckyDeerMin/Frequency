@@ -1,7 +1,8 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
-/// 1인칭 플레이어 컨트롤러.
+/// 1인칭 플레이어 컨트롤러 — New Input System 기반.
 /// WASD 이동 / Space 점프 / 마우스 시점 / ESC 커서 토글
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
@@ -13,7 +14,7 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] float gravity = -20f;
 
     [Header("시점")]
-    [SerializeField] float mouseSensitivity = 2f;
+    [SerializeField] float mouseSensitivity = 0.15f;
     [SerializeField] float maxLookAngle = 80f;
 
     CharacterController _cc;
@@ -39,16 +40,23 @@ public class FirstPersonController : MonoBehaviour
 
     void HandleMovement()
     {
+        var kb = Keyboard.current;
+        if (kb == null) return;
+
         bool grounded = _cc.isGrounded;
         if (grounded && _velocity.y < 0f)
             _velocity.y = -2f;
 
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
+        // WASD 입력
+        float h = (kb.dKey.isPressed ? 1f : 0f) - (kb.aKey.isPressed ? 1f : 0f);
+        float v = (kb.wKey.isPressed ? 1f : 0f) - (kb.sKey.isPressed ? 1f : 0f);
+
         Vector3 move = transform.right * h + transform.forward * v;
+        if (move.magnitude > 1f) move.Normalize(); // 대각선 이동 속도 정규화
         _cc.Move(move * moveSpeed * Time.deltaTime);
 
-        if (Input.GetButtonDown("Jump") && grounded)
+        // 점프
+        if (kb.spaceKey.wasPressedThisFrame && grounded)
             _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
 
         _velocity.y += gravity * Time.deltaTime;
@@ -59,17 +67,20 @@ public class FirstPersonController : MonoBehaviour
     {
         if (Cursor.lockState != CursorLockMode.Locked) return;
 
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+        var mouse = Mouse.current;
+        if (mouse == null) return;
 
-        _xRotation = Mathf.Clamp(_xRotation - mouseY, -maxLookAngle, maxLookAngle);
+        Vector2 delta = mouse.delta.ReadValue() * mouseSensitivity;
+
+        _xRotation = Mathf.Clamp(_xRotation - delta.y, -maxLookAngle, maxLookAngle);
         _camTransform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
-        transform.Rotate(0f, mouseX, 0f);
+        transform.Rotate(0f, delta.x, 0f);
     }
 
     void HandleCursorToggle()
     {
-        if (!Input.GetKeyDown(KeyCode.Escape)) return;
+        var kb = Keyboard.current;
+        if (kb == null || !kb.escapeKey.wasPressedThisFrame) return;
 
         if (Cursor.lockState == CursorLockMode.Locked)
         {
