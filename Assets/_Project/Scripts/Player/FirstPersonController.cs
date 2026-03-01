@@ -95,13 +95,13 @@ public class FirstPersonController : MonoBehaviour
         var kb = Keyboard.current;
         if (kb == null) return;
 
-        bool wantCrouch = kb.leftCtrlKey.isPressed;
-
-        // 일어서려 할 때 머리 위 공간 체크
-        if (!wantCrouch && _isCrouching && !CanStandUp())
-            wantCrouch = true; // 공간 없으면 계속 앉아 있음
-
-        _isCrouching = wantCrouch;
+        // 토글: Ctrl 눌릴 때마다 상태 전환
+        if (kb.leftCtrlKey.wasPressedThisFrame)
+        {
+            // 일어서려 할 때 머리 위 공간 체크
+            if (_isCrouching && !CanStandUp()) { /* 공간 없으면 무시 */ }
+            else _isCrouching = !_isCrouching;
+        }
         float targetH = _isCrouching ? crouchHeight : standHeight;
 
         // CharacterController 높이 / 중심 보간 (발이 바닥에 고정되도록 center 조정)
