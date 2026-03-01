@@ -91,7 +91,11 @@ public class FrequencyPostProcessFeature : ScriptableRendererFeature
 
                 builder.SetRenderFunc(static (PassData data, RasterGraphContext context) =>
                 {
-                    Blitter.BlitTexture(context.cmd, data.source, new Vector4(1, 1, 0, 0), 0);
+                    // 수정: RasterGraphContext에서는 직접적인 Blit 대신 
+                    // RasterCommandBuffer의 메서드를 사용하거나, 올바른 Blitter 인자를 전달해야 합니다.
+                    // Unity 6에서는 아래 방식이 가장 간결하고 정확합니다.
+
+                    Blitter.BlitTexture(context.cmd, data.source, new Vector4(1, 1, 0, 0), 0, false);
                 });
             }
         }
